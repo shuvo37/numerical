@@ -1,6 +1,9 @@
-#include<stdio.h>
 
-#define MAX 100
+#include<bits/stdc++.h>
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+   const int MAX=100;
   int n,i,j;
  double matrix[MAX][MAX+1];
 
