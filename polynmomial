@@ -1,0 +1,100 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+
+using namespace std;
+
+// Function to perform Gaussian elimination
+void gaussianElimination(vector<vector<double>>& A, vector<double>& b) {
+    int n = A.size();
+
+    // Forward elimination
+    for (int i = 0; i < n - 1; i++) {
+        // Find pivot element
+        int maxRow = i;
+        for (int j = i + 1; j < n; j++) {
+            if (abs(A[j][i]) > abs(A[maxRow][i])) {
+                maxRow = j;
+            }
+        }
+
+        // Swap rows if necessary
+        if (maxRow != i) {
+            swap(A[i], A[maxRow]);
+            swap(b[i], b[maxRow]);
+        }
+
+        // Eliminate elements below pivot
+        for (int j = i + 1; j < n; j++) {
+            double factor = A[j][i] / A[i][i];
+            for (int k = i; k < n; k++) {
+                A[j][k] -= factor * A[i][k];
+            }
+            b[j] -= factor * b[i];
+        }
+    }
+
+    // Back substitution
+    for (int i = n - 1; i >= 0; i--) {
+        for (int j = i + 1; j < n; j++) {
+            b[i] -= A[i][j] * b[j];
+        }
+        b[i] /= A[i][i];
+    }
+}
+
+// Function to calculate polynomial regression coefficients
+vector<double> polynomialRegression(const vector<double>& x, const vector<double>& y, int degree) {
+    int n = x.size();
+    vector<double> coefficients(degree + 1, 0);
+
+    // Create the design matrix A
+    vector<vector<double>> A(n, vector<double>(degree + 1));
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j <= degree; j++) {
+            A[i][j] = pow(x[i], j);
+        }
+    }
+
+    // Calculate normal equations matrix ATA and vector ATY
+    vector<vector<double>> ATA(degree + 1, vector<double>(degree + 1, 0));
+    vector<double> ATY(degree + 1, 0);
+    for (int i = 0; i <= degree; i++) {
+        for (int j = 0; j <= degree; j++) {
+            for (int k = 0; k < n; k++) {
+                ATA[i][j] += A[k][i] * A[k][j];
+            }
+            ATY[i] += A[k][i] * y[k];
+        }
+    }
+
+    // Solve the linear system ATA * coefficients = ATY using Gaussian elimination
+    gaussianElimination(ATA, ATY);
+
+    return ATY;  // ATY now contains the coefficients
+}
+
+int main() {
+    // Example usage
+    vector<double> x = {1, 2, 3, 4, 5};
+    vector<double> y = {2, 5, 10, 17, 26};
+    int degree = 2;  // Fit a quadratic polynomial
+
+    vector<double> coefficients = polynomialRegression(x, y, degree);
+
+    cout << "Polynomial regression equation: y = ";
+    for (int i = 0; i <= degree; i++) {
+        cout << coefficients[i] << "*x^" << i;
+        if (i != degree) {
+            cout << " + ";
+        }
+    }
+    cout << endl;
+
+    // Predict value for a new x
+    double newX = 6;
+    double predictedY = 0;
+    for (int i = 0; i <= degree; i++) {
+        predictedY += coefficients[i] * pow(newX, i);
+    }
+    cout << "Predicted y for x
